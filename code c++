@@ -1,0 +1,228 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+
+char alpha[100] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
+
+struct node{
+	char id[10000];
+	int val;
+	int height;
+	
+	struct node *left;
+	struct node *right;
+};
+
+int getHeight(struct node *localRoot){
+	if(localRoot == NULL) return 0;
+	return localRoot->height;
+}
+
+int max(int a,int b){
+	return (a > b) ? a : b;
+}
+
+int getBalanceFactor(struct node *localRoot){
+	return getHeight(localRoot->left) - getHeight(localRoot->right);
+}
+
+struct node *newNode(char* id, int val){
+	
+	struct node *nNode = (struct node*)malloc(sizeof(struct node));
+	strcpy(nNode->id,id);
+	nNode->val = val;
+	nNode->height = 1;
+	nNode->left = NULL;
+	nNode->right = NULL;
+	
+	return nNode;
+}
+
+struct node *leftRotate(struct node *initialRoot){
+	
+	struct node *aNode = initialRoot->right;
+	struct node *bNode = aNode->left;
+	
+	aNode->left = initialRoot;
+	initialRoot->right = bNode;
+	
+	aNode->height = max(getHeight(aNode->left),getHeight(aNode->right)) + 1;
+	initialRoot->height = max(getHeight(initialRoot->left),getHeight(initialRoot->right)) + 1;
+	
+	return aNode;
+}
+
+struct node *rightRotate(struct node *initialRoot){
+	
+	struct node *aNode = initialRoot->left;
+	struct node *bNode = aNode->right;
+	
+	aNode->right = initialRoot;
+	initialRoot->left = bNode;
+	
+	aNode->height = max(getHeight(aNode->left),getHeight(aNode->right)) + 1;
+	initialRoot->height = max(getHeight(initialRoot->left),getHeight(initialRoot->right)) + 1;
+	
+	return aNode;
+}
+
+
+struct node *rebalance(struct node *localRoot){
+	
+	localRoot->height = max(getHeight(localRoot->left),getHeight(localRoot->right)) + 1;
+	int bFact = getBalanceFactor(localRoot);
+	
+	//left left
+	if(bFact > 1 && getBalanceFactor(localRoot->left) >= 0){
+		return rightRotate(localRoot);
+	}
+	//left right
+	else if(bFact > 1 && getBalanceFactor(localRoot->left) < 0){
+		localRoot->left = leftRotate(localRoot->left);
+		return rightRotate(localRoot);
+	}
+	//right right
+	else if(bFact < -1 && getBalanceFactor(localRoot->right) <= 0){
+		return leftRotate(localRoot);
+	}
+	//right left
+	else if(bFact < -1 && getBalanceFactor(localRoot->right) > 0){
+		localRoot->right = rightRotate(localRoot->right);
+		return leftRotate(localRoot);
+	}
+
+	return localRoot;
+}
+
+struct node *insertNode(struct node *localRoot, char* id, int val){
+	if(localRoot == NULL){
+		return newNode(id,val);
+	}
+	if(strcmp(localRoot->id,id) > 0){
+		localRoot->left = insertNode(localRoot->left,id,val);
+	}
+	else if(strcmp(localRoot->id,id) < 0){
+		localRoot->right = insertNode(localRoot->right,id,val);
+	}
+	else {
+		return localRoot;
+	}
+	
+	return rebalance(localRoot);
+}
+
+void findNode(struct node *localRoot, char* id){
+	
+	if(localRoot == NULL){
+		printf("0\n");
+	}
+	else if(strcmp(localRoot->id,id) == 0){
+		printf("%d\n",localRoot->val);
+	}
+	else if(strcmp(localRoot->id,id) > 0){
+		findNode(localRoot->left,id);
+	}
+	else if(strcmp(localRoot->id,id) < 0){
+		findNode(localRoot->right,id);
+	}
+}
+
+void inOrder(struct node *localRoot) {
+	if (localRoot == NULL) return;
+	inOrder(localRoot->left);
+	printf(" %s ", localRoot->id);
+	inOrder(localRoot->right);
+}
+
+int main(){
+	
+	struct node *root = NULL;
+	
+	int count = 1;
+	
+	for(int a=0;a<26;a++){
+		char word[100];
+		word[0] = alpha[a];
+		word[1] = '\0';
+		root = insertNode(root,word,count);
+		count++;
+	}
+	
+	for(int a=0;a<26;a++){
+		char word[100];
+		word[0] = alpha[a];
+		for(int b=a+1;b<26;b++){
+			word[1] = alpha[b];
+			word[2] = '\0';
+			root = insertNode(root,word,count);
+			count++;
+		}
+	}
+	
+	for(int a=0;a<26;a++){
+		char word[100];
+		word[0] = alpha[a];
+		for(int b=a+1;b<26;b++){
+			
+			word[1] = alpha[b];
+			for(int c=b+1;c<26;c++){
+			
+				word[2] = alpha[c];
+				word[3] = '\0';
+				root = insertNode(root,word,count);
+				count++;
+			}
+		}
+	}	
+	
+	for(int a=0;a<26;a++){
+		char word[100];
+		word[0] = alpha[a];
+		for(int b=a+1;b<26;b++){
+			
+			word[1] = alpha[b];
+			for(int c=b+1;c<26;c++){
+			
+				word[2] = alpha[c];
+				
+				for(int d=c+1;d<26;d++){
+					word[3] = alpha[d];
+					word[4] = '\0';
+					root = insertNode(root,word,count);
+					count++;
+				}
+			}
+		}
+	}
+	
+	for(int a=0;a<26;a++){
+		char word[100];
+		word[0] = alpha[a];
+		for(int b=a+1;b<26;b++){
+			
+			word[1] = alpha[b];
+			for(int c=b+1;c<26;c++){
+			
+				word[2] = alpha[c];
+				
+				for(int d=c+1;d<26;d++){
+					word[3] = alpha[d];
+					for(int e=d+1;e<26;e++){
+						word[4] = alpha[e];
+						word[5] = '\0';
+						root = insertNode(root,word,count);
+						count++;
+					}
+				}
+			}
+		}
+	}
+	
+	char input[100];
+	
+	while(gets(input)){
+		findNode(root,input);
+	}
+	
+	return 0;
+}
